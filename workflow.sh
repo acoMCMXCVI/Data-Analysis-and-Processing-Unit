@@ -86,8 +86,13 @@ popd
 mkdir -p build/face_landmark_remote_controller
 pushd build/face_landmark_remote_controller
 
-cmake ../../source/face_landmark_remote_controller/ \
-	-G "Visual Studio 14 2015 Win64"
+if [[ $OSTYPE == "windows" ]]
+then
+	cmake ../../source/face_landmark_remote_controller/ \
+		-G "Visual Studio 14 2015 Win64"
+else
+	cmake ../../source/face_landmark_remote_controller/
+fi
 cmake --build . --config Release
 
 ###############################################################################
