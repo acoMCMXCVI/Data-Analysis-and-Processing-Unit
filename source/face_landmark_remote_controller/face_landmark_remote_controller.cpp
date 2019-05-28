@@ -55,6 +55,13 @@
 #include <dlib/image_io.h>
 #include <iostream>
 
+#include "opencv2/video/tracking.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/videoio.hpp"
+#include "opencv2/highgui.hpp"
+
+using namespace cv;
+
 using namespace dlib;
 using namespace std;
 
@@ -62,6 +69,8 @@ using namespace std;
 
 int main(int argc, char** argv)
 {  
+	Mat image;
+	
     try
     {
         // This example takes in a shape model file and then a list of images to
@@ -100,7 +109,7 @@ int main(int argc, char** argv)
 
             // Now tell the face detector to give us a list of bounding boxes
             // around all the faces in the image.
-            std::vector<rectangle> dets = detector(img);
+            std::vector<dlib::rectangle> dets = detector(img);
             cout << "Number of faces detected: " << dets.size() << endl;
 
             // Now we will go ask the shape_predictor to tell us the pose of

@@ -95,6 +95,13 @@ else
 fi
 cmake --build . --config Release
 
+#TODO Hack for DLLs.
+# When run from Windows console in "build\face_landmark_remote_controller\Release\"
+cp ../../out/x64/vc14/bin/opencv_core320d.dll Release/
+# When run from Git Bash console in "build/face_landmark_remote_controller/"
+cp ../../out/x64/vc14/bin/opencv_core320d.dll .
+cp /c/Windows/SysWOW64/downlevel/api-ms-win-crt-*-l1-1-0.dll .
+
 ###############################################################################
 # Test.
 
