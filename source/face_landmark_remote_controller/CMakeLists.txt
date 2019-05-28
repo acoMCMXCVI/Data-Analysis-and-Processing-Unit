@@ -5,6 +5,7 @@ project(face_landmark_remote_controller)
 add_executable(
 	face_landmark_remote_controller
 	face_landmark_remote_controller.cpp
+	TunnelClient.cpp
 )
 
 set(CMAKE_PREFIX_PATH ../../out/)

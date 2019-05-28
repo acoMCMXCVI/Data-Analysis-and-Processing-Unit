@@ -1,58 +1,31 @@
-// The contents of this file are in the public domain. See LICENSE_FOR_EXAMPLE_PROGRAMS.txt
-/*
-
-    This example program shows how to find frontal human faces in an image and
-    estimate their pose.  The pose takes the form of 68 landmarks.  These are
-    points on the face such as the corners of the mouth, along the eyebrows, on
-    the eyes, and so forth.  
-    
-
-
-    The face detector we use is made using the classic Histogram of Oriented
-    Gradients (HOG) feature combined with a linear classifier, an image pyramid,
-    and sliding window detection scheme.  The pose estimator was created by
-    using dlib's implementation of the paper:
-       One Millisecond Face Alignment with an Ensemble of Regression Trees by
-       Vahid Kazemi and Josephine Sullivan, CVPR 2014
-    and was trained on the iBUG 300-W face landmark dataset (see
-    https://ibug.doc.ic.ac.uk/resources/facial-point-annotations/):  
-       C. Sagonas, E. Antonakos, G, Tzimiropoulos, S. Zafeiriou, M. Pantic. 
-       300 faces In-the-wild challenge: Database and results. 
-       Image and Vision Computing (IMAVIS), Special Issue on Facial Landmark Localisation "In-The-Wild". 2016.
-    You can get the trained model file from:
-    http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2.
-    Note that the license for the iBUG 300-W dataset excludes commercial use.
-    So you should contact Imperial College London to find out if it's OK for
-    you to use this model file in a commercial product.
-
-
-    Also, note that you can train your own models using dlib's machine learning
-    tools.  See train_shape_predictor_ex.cpp to see an example.
-
-    
-
-
-    Finally, note that the face detector is fastest when compiled with at least
-    SSE2 instructions enabled.  So if you are using a PC with an Intel or AMD
-    chip then you should enable at least SSE2 instructions.  If you are using
-    cmake to compile this program you can enable them by using one of the
-    following commands when you create the build project:
-        cmake path_to_dlib_root/examples -DUSE_SSE2_INSTRUCTIONS=ON
-        cmake path_to_dlib_root/examples -DUSE_SSE4_INSTRUCTIONS=ON
-        cmake path_to_dlib_root/examples -DUSE_AVX_INSTRUCTIONS=ON
-    This will set the appropriate compiler options for GCC, clang, Visual
-    Studio, or the Intel compiler.  If you are using another compiler then you
-    need to consult your compiler's manual to determine how to enable these
-    instructions.  Note that AVX is the fastest but requires a CPU from at least
-    2011.  SSE4 is the next fastest and is supported by most current machines.  
+ /*iBUG 300-W face landmark dataset
+    https://ibug.doc.ic.ac.uk/resources/facial-point-annotations/  
 */
+
+#undef UNICODE
+
+
+#include <winsock2.h>
+
+// Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
+#pragma comment (lib, "Ws2_32.lib")
+#pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "AdvApi32.lib")
+
+#define IP_ADDR "127.0.0.1"
+#define IP_PORT 27000
+
+#define BUFLEN 512
+
 
 
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
+#include <dlib/image_transforms.h>
 #include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
+#include <dlib/opencv/cv_image.h>
 #include <iostream>
 
 #include "opencv2/video/tracking.hpp"
@@ -60,23 +33,31 @@
 #include "opencv2/videoio.hpp"
 #include "opencv2/highgui.hpp"
 
+
+
+
 using namespace cv;
+
 
 using namespace dlib;
 using namespace std;
 
+#include "TunnelClient.h"
+
 // ----------------------------------------------------------------------------------------
 
+#define DEBUG(var) do{ cout << #var << " = " << var << endl; }while(0)
+
 int main(int argc, char** argv)
-{  
-	Mat image;
-	
+{
+	TunnelClient tunnelClient;
+
+
+	cout << "My BsC" << endl;
+	namedWindow("Prozor", WINDOW_AUTOSIZE);
     try
     {
-        // This example takes in a shape model file and then a list of images to
-        // process.  We will take these filenames in as command line arguments.
-        // Dlib comes with example images in the examples/faces folder so give
-        // those as arguments to this program.
+
         if (argc == 1)
         {
             cout << "Call this program like this:" << endl;
@@ -86,67 +67,93 @@ int main(int argc, char** argv)
             return 0;
         }
 
-        // We need a face detector.  We will use this to get bounding boxes for
-        // each face in an image.
-        frontal_face_detector detector = get_frontal_face_detector();
-        // And we also need a shape_predictor.  This is the tool that will predict face
-        // landmark positions given an image and face bounding box.  Here we are just
-        // loading the model from the shape_predictor_68_face_landmarks.dat file you gave
-        // as a command line argument.
-        shape_predictor sp;
+
+
+        frontal_face_detector detector = get_frontal_face_detector();	// Pronalazi face na slici
+
+        shape_predictor sp;												// Shape predictor - istrenirana baza lica za predikciju 
         deserialize(argv[1]) >> sp;
 
+		VideoCapture cap(0);											// Video
 
-        image_window win, win_faces;
-        // Loop over all the images provided on the command line.
-        for (int i = 2; i < argc; ++i)
-        {
-            cout << "processing image " << argv[i] << endl;
-            array2d<rgb_pixel> img;
-            load_image(img, argv[i]);
-            // Make the image larger so we can detect small faces.
-            pyramid_up(img);
+		if (!cap.isOpened()) {											// Provera da li je kamera ukljucena
 
-            // Now tell the face detector to give us a list of bounding boxes
-            // around all the faces in the image.
-            std::vector<dlib::rectangle> dets = detector(img);
-            cout << "Number of faces detected: " << dets.size() << endl;
+			cout << "Nema kamere\n";
+			return 0;
 
-            // Now we will go ask the shape_predictor to tell us the pose of
-            // each face we detected.
-            std::vector<full_object_detection> shapes;
-            for (unsigned long j = 0; j < dets.size(); ++j)
-            {
-                full_object_detection shape = sp(img, dets[j]);
-                cout << "number of parts: "<< shape.num_parts() << endl;
-                cout << "pixel position of first part:  " << shape.part(0) << endl;
-                cout << "pixel position of second part: " << shape.part(1) << endl;
-                // You get the idea, you can get all the face part locations if
-                // you want them.  Here we just store them in shapes so we can
-                // put them on the screen.
-                shapes.push_back(shape);
-            }
+		}
+		
 
-            // Now let's view our face poses on the screen.
-            win.clear_overlay();
-            win.set_image(img);
-            win.add_overlay(render_face_detections(shapes));
+		TunnelData tunnelData;											// Podaci za slanje Urealu
 
-            // We can also extract copies of each face that are cropped, rotated upright,
-            // and scaled to a standard size as shown here:
-            dlib::array<array2d<rgb_pixel> > face_chips;
-            extract_image_chips(img, get_face_chip_details(shapes), face_chips);
-            win_faces.set_image(tile_images(face_chips));
+		image_window win;												// Prozor
 
-            cout << "Hit enter to process the next image..." << endl;
-            cin.get();
+		long eyebrow_height_min = LONG_MAX;
+		long eyebrow_height_max = LONG_MIN;
+
+		Point2f eyebrows_R_IN= Point2f(0,0) ;
+
+        for (int i=0;i<100;i++){														// For pelja za video
+
+            array2d<bgr_pixel> img;
+			Mat frame;
+			cap>> frame;
+
+			assign_image(img, cv_image<bgr_pixel>(frame));				// Pretvara Mat u array2d
+
+            //pyramid_up(img);											// Skalira sliku kako bi se male face pronasle
+
+
+            std::vector<dlib::rectangle> dets = detector(img);			// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+			//std::vector<Point2f> points;
+
+			win.clear_overlay();										// Brise prosli frame i stavlja novi
+			win.set_image(img);
+
+
+
+			if (!dets.empty()) {										// Ako postoji faca iscrtaj tu gacu preko postojeceg frejma
+												
+				full_object_detection shape = sp(img, dets[0]);
+				win.add_overlay(render_face_detections(shape));
+
+
+				if (i > 10 && eyebrows_R_IN == Point2f(0, 0) ) {        // KALIBRACIJA 
+
+					point pointt;
+					pointt = shape.part(17);
+
+					eyebrows_R_IN.x = pointt.x();
+					eyebrows_R_IN.y = pointt.y();
+
+					cout << "Uspesno kalibrisan sistem" << endl;
+
+				}
+
+				if (i > 10 && eyebrows_R_IN != Point2f(0, 0)) {				// RACUNANJE VREDNOSTI 
+
+					point pointt;
+					pointt = shape.part(17);
+					
+					tunnelData.r_eyebrow_move = pointt.y() - eyebrows_R_IN.y;
+					DEBUG(tunnelData.r_eyebrow_move);
+					tunnelClient.sendTunnelData(tunnelData);
+
+				}
+
+				//DEBUG(eyebrow_height);
+
+			}
+
+			imshow("Prozor", frame);
+			waitKey(30);
         }
+
     }
+
     catch (exception& e)
     {
         cout << "\nexception thrown!" << endl;
         cout << e.what() << endl;
     }
 }
-
-// ----------------------------------------------------------------------------------------
