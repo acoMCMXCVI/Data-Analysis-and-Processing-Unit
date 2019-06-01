@@ -12,6 +12,10 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
+//Need for sever
+#define SERVER  0
+
+
 #define IP_ADDR "127.0.0.1"
 #define IP_PORT 27000
 
@@ -50,20 +54,20 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+	
+#if SERVER
 	TunnelClient tunnelClient;
+#endif // SERVER
 
 
-	cout << "My BsC" << endl;
+	cout << "FACE LENDMARK REMOTE CONTROLLER" << endl;
 	namedWindow("Prozor", WINDOW_AUTOSIZE);
     try
     {
 
         if (argc == 1)
         {
-            cout << "Call this program like this:" << endl;
-            cout << "./face_landmark_detection_ex shape_predictor_68_face_landmarks.dat faces/*.jpg" << endl;
-            cout << "\nYou can get the shape_predictor_68_face_landmarks.dat file from:\n";
-            cout << "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2" << endl;
+            cout << "Program nije pravilno pozvan" << endl;
             return 0;
         }
 
@@ -88,12 +92,10 @@ int main(int argc, char** argv)
 
 		image_window win;												// Prozor
 
-		long eyebrow_height_min = LONG_MAX;
-		long eyebrow_height_max = LONG_MIN;
 
 		Point2f eyebrows_R_IN= Point2f(0,0) ;
 
-        for (int i=0;i<100;i++){														// For pelja za video
+        for (int i=0;i<500;i++){										// For pelja za video
 
             array2d<bgr_pixel> img;
 			Mat frame;
@@ -118,7 +120,7 @@ int main(int argc, char** argv)
 				win.add_overlay(render_face_detections(shape));
 
 
-				if (i > 10 && eyebrows_R_IN == Point2f(0, 0) ) {        // KALIBRACIJA 
+				if (i > 10 && eyebrows_R_IN == Point2f(0, 0) ) {			// KALIBRACIJA 
 
 					point pointt;
 					pointt = shape.part(17);
@@ -135,13 +137,17 @@ int main(int argc, char** argv)
 					point pointt;
 					pointt = shape.part(17);
 					
-					tunnelData.r_eyebrow_move = pointt.y() - eyebrows_R_IN.y;
+					tunnelData.r_eyebrow_move = (pointt.y() - eyebrows_R_IN.y);
 					DEBUG(tunnelData.r_eyebrow_move);
+
+
+
+#if SERVER																//Slanje podataka
 					tunnelClient.sendTunnelData(tunnelData);
+#endif // Server
+
 
 				}
-
-				//DEBUG(eyebrow_height);
 
 			}
 
@@ -149,8 +155,8 @@ int main(int argc, char** argv)
 			waitKey(30);
         }
 
-    }
 
+    }
     catch (exception& e)
     {
         cout << "\nexception thrown!" << endl;
