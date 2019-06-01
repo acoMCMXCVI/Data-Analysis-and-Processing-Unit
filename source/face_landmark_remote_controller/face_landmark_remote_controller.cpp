@@ -78,7 +78,7 @@ int main(int argc, char** argv)
         shape_predictor sp;												// Shape predictor - istrenirana baza lica za predikciju 
         deserialize(argv[1]) >> sp;
 
-		VideoCapture cap(0);											// Video
+		VideoCapture cap(1);											// Video
 
 		if (!cap.isOpened()) {											// Provera da li je kamera ukljucena
 
@@ -93,7 +93,9 @@ int main(int argc, char** argv)
 		image_window win;												// Prozor
 
 
-		Point2f eyebrows_R_IN= Point2f(0,0) ;
+
+		TunnelData calibration;
+		bool caliCheck = false;
 
         for (int i=0;i<500;i++){										// For pelja za video
 
@@ -120,26 +122,27 @@ int main(int argc, char** argv)
 				win.add_overlay(render_face_detections(shape));
 
 
-				if (i > 10 && eyebrows_R_IN == Point2f(0, 0) ) {			// KALIBRACIJA 
+				if (i > 10 && !caliCheck) {			// KALIBRACIJA 
+					
+					calibration.r_eyebrow_out= shape.part(17).y();
+					calibration.r_eyebrow_in = shape.part(21).y();
+					calibration.l_eyebrow_in = shape.part(12).y();
+					calibration.l_eyebrow_out = shape.part(26).y();
 
-					point pointt;
-					pointt = shape.part(17);
-
-					eyebrows_R_IN.x = pointt.x();
-					eyebrows_R_IN.y = pointt.y();
-
+					caliCheck = true;
 					cout << "Uspesno kalibrisan sistem" << endl;
 
 				}
 
-				if (i > 10 && eyebrows_R_IN != Point2f(0, 0)) {				// RACUNANJE VREDNOSTI 
+				if (caliCheck) {				// RACUNANJE VREDNOSTI 
 
-					point pointt;
-					pointt = shape.part(17);
+					tunnelData.r_eyebrow_out = (shape.part(17).y()- calibration.r_eyebrow_out);
+					tunnelData.r_eyebrow_in = (shape.part(21).y()- calibration.r_eyebrow_in) ;
+					tunnelData.l_eyebrow_in = (shape.part(12).y()- calibration.l_eyebrow_in);
+					tunnelData.l_eyebrow_out = (shape.part(26).y()- calibration.l_eyebrow_out);
 					
-					tunnelData.r_eyebrow_move = (pointt.y() - eyebrows_R_IN.y);
-					DEBUG(tunnelData.r_eyebrow_move);
 
+					DEBUG(tunnelData.r_eyebrow_out);
 
 
 #if SERVER																//Slanje podataka
