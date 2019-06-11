@@ -12,9 +12,10 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-//Need for sever
-#define SERVER  0
 
+#define SERVER  1							//Need for sever
+
+#define CAMERA 0
 
 #define IP_ADDR "127.0.0.1"
 #define IP_PORT 27000
@@ -61,7 +62,7 @@ int main(int argc, char** argv)
 
 
 	cout << "FACE LENDMARK REMOTE CONTROLLER" << endl;
-	namedWindow("Prozor", WINDOW_AUTOSIZE);
+	//namedWindow("Prozor", WINDOW_AUTOSIZE);
     try
     {
 
@@ -78,7 +79,8 @@ int main(int argc, char** argv)
         shape_predictor sp;												// Shape predictor - istrenirana baza lica za predikciju 
         deserialize(argv[1]) >> sp;
 
-		VideoCapture cap(1);											// Video
+		VideoCapture cap(CAMERA);											// Video kamera ili klip
+		//VideoCapture cap( "../../source/face_landmark_remote_controller/klip.mp4" );
 
 		if (!cap.isOpened()) {											// Provera da li je kamera ukljucena
 
@@ -88,20 +90,25 @@ int main(int argc, char** argv)
 		}
 		
 
-		TunnelData tunnelData;											// Podaci za slanje Urealu
-
 		image_window win;												// Prozor
 
 
+		TunnelData tunnelData;											// Podaci za slanje Urealu
 
-		TunnelData calibration;
-		bool caliCheck = false;
+		TunnelData calibration;											// Podaci za kalibraciju
+		bool caliCheck = false;											// Kalibracija y || n
 
-        for (int i=0;i<500;i++){										// For pelja za video
+
+
+        for (int i=0;i<1500;i++){										// For pelja za video
 
             array2d<bgr_pixel> img;
 			Mat frame;
 			cap>> frame;
+
+#if CAMERA!=0
+			rotate(frame, frame, ROTATE_90_COUNTERCLOCKWISE);
+#endif // CAMERA
 
 			assign_image(img, cv_image<bgr_pixel>(frame));				// Pretvara Mat u array2d
 
@@ -123,10 +130,13 @@ int main(int argc, char** argv)
 
 
 				if (i > 10 && !caliCheck) {			// KALIBRACIJA 
+
+
+					calibration.noseroot = shape.part(28).y();
 					
 					calibration.r_eyebrow_out= shape.part(17).y();
 					calibration.r_eyebrow_in = shape.part(21).y();
-					calibration.l_eyebrow_in = shape.part(12).y();
+					calibration.l_eyebrow_in = shape.part(22).y();
 					calibration.l_eyebrow_out = shape.part(26).y();
 
 					caliCheck = true;
@@ -136,13 +146,15 @@ int main(int argc, char** argv)
 
 				if (caliCheck) {				// RACUNANJE VREDNOSTI 
 
-					tunnelData.r_eyebrow_out = (shape.part(17).y()- calibration.r_eyebrow_out);
-					tunnelData.r_eyebrow_in = (shape.part(21).y()- calibration.r_eyebrow_in) ;
-					tunnelData.l_eyebrow_in = (shape.part(12).y()- calibration.l_eyebrow_in);
-					tunnelData.l_eyebrow_out = (shape.part(26).y()- calibration.l_eyebrow_out);
+					int shift = shape.part(28).y() - calibration.noseroot;
+
+					tunnelData.r_eyebrow_out = (calibration.r_eyebrow_out - shape.part(17).y() - shift);
+					tunnelData.r_eyebrow_in = (calibration.r_eyebrow_in - shape.part(21).y() + shift) ;
+					tunnelData.l_eyebrow_in = (calibration.l_eyebrow_in - shape.part(22).y() + shift);
+					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(26).y() + shift);
 					
 
-					DEBUG(tunnelData.r_eyebrow_out);
+					DEBUG(tunnelData.l_eyebrow_in);
 
 
 #if SERVER																//Slanje podataka
@@ -154,7 +166,7 @@ int main(int argc, char** argv)
 
 			}
 
-			imshow("Prozor", frame);
+			//imshow("Prozor", frame);
 			waitKey(30);
         }
 
