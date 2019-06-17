@@ -13,9 +13,9 @@
 #pragma comment (lib, "AdvApi32.lib")
 
 
-#define SERVER  1							//Need for sever
+#define SERVER  false							//Need for sever
 
-#define CAMERA 0
+#define CAMERA -1
 
 #define IP_ADDR "127.0.0.1"
 #define IP_PORT 27000
@@ -56,6 +56,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	
+
 #if SERVER
 	TunnelClient tunnelClient;
 #endif // SERVER
@@ -63,6 +64,8 @@ int main(int argc, char** argv)
 
 	cout << "FACE LENDMARK REMOTE CONTROLLER" << endl;
 	//namedWindow("Prozor", WINDOW_AUTOSIZE);
+
+
     try
     {
 
@@ -73,47 +76,61 @@ int main(int argc, char** argv)
         }
 
 
-
         frontal_face_detector detector = get_frontal_face_detector();	// Pronalazi face na slici
 
         shape_predictor sp;												// Shape predictor - istrenirana baza lica za predikciju 
         deserialize(argv[1]) >> sp;
 
-		VideoCapture cap(CAMERA);											// Video kamera ili klip
-		//VideoCapture cap( "../../source/face_landmark_remote_controller/klip.mp4" );
+		ofstream myfile;												// Pravljenje fajla za upis podataka
+		myfile.open("../../source/face_landmark_remote_controller/out.txt");
+
+
+
+
+#if CAMERA >= 0
+		VideoCapture cap(CAMERA);
+#elif CAMERA -1
+		VideoCapture cap("../../source/face_landmark_remote_controller/klip.mp4");
+#endif //CAMERA || CLIP
+				
+
 
 		if (!cap.isOpened()) {											// Provera da li je kamera ukljucena
-
 			cout << "Nema kamere\n";
 			return 0;
-
 		}
 		
+		cout << cap.get(CAP_PROP_FPS) << endl;
+
 
 		image_window win;												// Prozor
-
 
 		TunnelData tunnelData;											// Podaci za slanje Urealu
 
 		TunnelData calibration;											// Podaci za kalibraciju
 		bool caliCheck = false;											// Kalibracija y || n
 
+		time_t start, end;												// Merac vremena
 
 
         for (int i=0;i<1500;i++){										// For pelja za video
 
-            array2d<bgr_pixel> img;
+			//array2d<bgr_pixel> img;
 			Mat frame;
+
 			cap>> frame;
 
-#if CAMERA!=0
+			if ( i == 15 ) time(&start);									// Pocetak merenja vremena
+
+
+#if CAMERA != 0
 			rotate(frame, frame, ROTATE_90_COUNTERCLOCKWISE);
 #endif // CAMERA
 
-			assign_image(img, cv_image<bgr_pixel>(frame));				// Pretvara Mat u array2d
 
+			cv_image<bgr_pixel> img(frame);
+			//assign_image(img, cv_image<bgr_pixel>(frame));			// Pretvara Mat u array2d
             //pyramid_up(img);											// Skalira sliku kako bi se male face pronasle
-
 
             std::vector<dlib::rectangle> dets = detector(img);			// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
 			//std::vector<Point2f> points;
@@ -132,9 +149,9 @@ int main(int argc, char** argv)
 				if (i > 10 && !caliCheck) {			// KALIBRACIJA 
 
 
-					calibration.noseroot = shape.part(28).y();
+					calibration.noseroot = shape.part(29).y();
 					
-					calibration.r_eyebrow_out= shape.part(17).y();
+					calibration.r_eyebrow_out = shape.part(18).y();
 					calibration.r_eyebrow_in = shape.part(21).y();
 					calibration.l_eyebrow_in = shape.part(22).y();
 					calibration.l_eyebrow_out = shape.part(26).y();
@@ -146,15 +163,19 @@ int main(int argc, char** argv)
 
 				if (caliCheck) {				// RACUNANJE VREDNOSTI 
 
-					int shift = shape.part(28).y() - calibration.noseroot;
+					float shift = shape.part(29).y() - calibration.noseroot;
 
-					tunnelData.r_eyebrow_out = (calibration.r_eyebrow_out - shape.part(17).y() - shift);
+					tunnelData.r_eyebrow_out = (calibration.r_eyebrow_out - shape.part(18).y() + shift);
 					tunnelData.r_eyebrow_in = (calibration.r_eyebrow_in - shape.part(21).y() + shift) ;
 					tunnelData.l_eyebrow_in = (calibration.l_eyebrow_in - shape.part(22).y() + shift);
-					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(26).y() + shift);
+					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(2).y() + shift);
 					
 
-					DEBUG(tunnelData.l_eyebrow_in);
+					DEBUG(shift);
+					DEBUG(tunnelData.r_eyebrow_in);
+
+					myfile << tunnelData.r_eyebrow_in << endl;			//Upis podataka u fajl
+
 
 
 #if SERVER																//Slanje podataka
@@ -163,12 +184,28 @@ int main(int argc, char** argv)
 
 
 				}
-
 			}
 
+
+			if (i == 135) {												// Zavrsetak merenja vremena
+
+				time(&end);
+				double seconds = difftime(end, start);
+				DEBUG(seconds);
+
+				// Calculate frames per second
+				int fps = 120 / seconds;
+				DEBUG(fps);
+
+				myfile << "Broj FPSa je: "<< fps << "+" << seconds << endl;
+
+			}
+			
+
 			//imshow("Prozor", frame);
-			waitKey(30);
+			//waitKey(10);
         }
+
 
 
     }
