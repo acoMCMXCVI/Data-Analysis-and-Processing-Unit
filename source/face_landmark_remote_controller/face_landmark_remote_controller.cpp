@@ -143,14 +143,14 @@ int main(int argc, char** argv)
 			win.set_image(img);
 
 			if (i > 10 && dets.empty())
-				dets = detector (img);										// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+				dets = detector (img);									// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
 
-												
-			full_object_detection shape = sp(img, dets[0]);
-			win.add_overlay(render_face_detections(shape));
 
 
 			if (!dets.empty()) {                                        // Ako postoji lice iscrtaj to lice preko postojeceg frejma
+
+				full_object_detection shape = sp(img, dets[0]);			// DObijanje lica ( shape-a ) iz slike
+				win.add_overlay(render_face_detections(shape));
 
 				if (i > 10 && !caliCheck) {								// KALIBRACIJA 
 
