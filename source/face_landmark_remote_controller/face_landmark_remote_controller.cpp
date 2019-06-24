@@ -113,6 +113,11 @@ int main(int argc, char** argv)
 		time_t start, end;												// Merac vremena
 
 
+
+		dlib::rectangle dets;								//Pravi se niz rectangle-ova koji okruzuju lice std::vector<dlib::rectangle> dets;	
+		// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+
+
         for (int i=0;i<1500;i++){										// For pelja za video
 
 			//array2d<bgr_pixel> img;
@@ -132,17 +137,16 @@ int main(int argc, char** argv)
 			//assign_image(img, cv_image<bgr_pixel>(frame));			// Pretvara Mat u array2d
             //pyramid_up(img);											// Skalira sliku kako bi se male face pronasle
 
-            std::vector<dlib::rectangle> dets = detector(img);			// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
-			//std::vector<Point2f> points;
+
 
 			win.clear_overlay();										// Brise prosli frame i stavlja novi
 			win.set_image(img);
 
 
+			
 
-			if (!dets.empty()) {										// Ako postoji faca iscrtaj tu gacu preko postojeceg frejma
 												
-				full_object_detection shape = sp(img, dets[0]);
+				full_object_detection shape = sp(img, dets);
 				win.add_overlay(render_face_detections(shape));
 
 
@@ -170,21 +174,17 @@ int main(int argc, char** argv)
 					tunnelData.l_eyebrow_in = (calibration.l_eyebrow_in - shape.part(22).y() + shift);
 					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(2).y() + shift);
 					
-
 					DEBUG(shift);
 					DEBUG(tunnelData.r_eyebrow_in);
 
 					myfile << tunnelData.r_eyebrow_in << endl;			//Upis podataka u fajl
 
-
-
 #if SERVER																//Slanje podataka
 					tunnelClient.sendTunnelData(tunnelData);
 #endif // Server
 
-
 				}
-			}
+
 
 
 			if (i == 135) {												// Zavrsetak merenja vremena
