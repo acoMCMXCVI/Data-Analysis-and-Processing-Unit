@@ -109,13 +109,14 @@ int main(int argc, char** argv)
 
 		TunnelData calibration;											// Podaci za kalibraciju
 		bool caliCheck = false;											// Kalibracija y || n
+		bool faceCheck = false;											//Postojili faca y || n
 
 		time_t start, end;												// Merac vremena
 
 
 
-		dlib::rectangle dets;								//Pravi se niz rectangle-ova koji okruzuju lice std::vector<dlib::rectangle> dets;	
-		// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+		std::vector<dlib::rectangle> dets;								//Pravi se niz rectangle-ova koji okruzuju lice std::vector<dlib::rectangle> dets;	
+		
 
 
         for (int i=0;i<1500;i++){										// For pelja za video
@@ -138,20 +139,20 @@ int main(int argc, char** argv)
             //pyramid_up(img);											// Skalira sliku kako bi se male face pronasle
 
 
-
 			win.clear_overlay();										// Brise prosli frame i stavlja novi
 			win.set_image(img);
 
-
-			
+			if (i > 10 && dets.empty())
+				dets = detector (img);										// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
 
 												
-				full_object_detection shape = sp(img, dets);
-				win.add_overlay(render_face_detections(shape));
+			full_object_detection shape = sp(img, dets[0]);
+			win.add_overlay(render_face_detections(shape));
 
 
-				if (i > 10 && !caliCheck) {			// KALIBRACIJA 
+			if (!dets.empty()) {                                        // Ako postoji lice iscrtaj to lice preko postojeceg frejma
 
+				if (i > 10 && !caliCheck) {								// KALIBRACIJA 
 
 					calibration.noseroot = shape.part(29).y();
 					
@@ -163,9 +164,11 @@ int main(int argc, char** argv)
 					caliCheck = true;
 					cout << "Uspesno kalibrisan sistem" << endl;
 
-				}
+				}//Kraj kalibracije prvih 10 frejmova
 
-				if (caliCheck) {				// RACUNANJE VREDNOSTI 
+
+
+				if (caliCheck) {											// RACUNANJE VREDNOSTI 
 
 					float shift = shape.part(29).y() - calibration.noseroot;
 
@@ -177,15 +180,15 @@ int main(int argc, char** argv)
 					DEBUG(shift);
 					DEBUG(tunnelData.r_eyebrow_in);
 
-					myfile << tunnelData.r_eyebrow_in << endl;			//Upis podataka u fajl
+					myfile << tunnelData.r_eyebrow_in << endl;				//Upis podataka u fajl
 
 #if SERVER																//Slanje podataka
 					tunnelClient.sendTunnelData(tunnelData);
 #endif // Server
 
-				}
+				}//Ako je kalibracija odradjena mozemo da racunamo vrednosti na osnovu kalibracije
 
-
+			}// Kraj provere da li postoji faca u dets
 
 			if (i == 135) {												// Zavrsetak merenja vremena
 
@@ -199,16 +202,22 @@ int main(int argc, char** argv)
 
 				myfile << "Broj FPSa je: "<< fps << "+" << seconds << endl;
 
-			}
+			}//Racunanje FPSa
 			
 
 			//imshow("Prozor", frame);
 			//waitKey(10);
-        }
+
+        }//For petlja
 
 
 
     }
+
+
+
+
+
     catch (exception& e)
     {
         cout << "\nexception thrown!" << endl;
