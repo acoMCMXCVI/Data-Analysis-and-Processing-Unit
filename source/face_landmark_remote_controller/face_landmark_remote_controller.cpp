@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 
 
 	cout << "FACE LENDMARK REMOTE CONTROLLER" << endl;
-	//namedWindow("Prozor", WINDOW_AUTOSIZE);
+	namedWindow("Prozor", WINDOW_AUTOSIZE);
 
 
     try
@@ -113,11 +113,8 @@ int main(int argc, char** argv)
 
 		time_t start, end;												// Merac vremena
 
-
-
-		std::vector<dlib::rectangle> dets;								//Pravi se niz rectangle-ova koji okruzuju lice std::vector<dlib::rectangle> dets;	
-		
-
+		std::vector<dlib::rectangle> facePos;							//Pravi se niz rectangle-ova koji okruzuju lice std::vector<dlib::rectangle> facePos;	
+		Rect rect;
 
         for (int i=0;i<1500;i++){										// For pelja za video
 
@@ -142,14 +139,19 @@ int main(int argc, char** argv)
 			win.clear_overlay();										// Brise prosli frame i stavlja novi
 			win.set_image(img);
 
-			if (i > 10 && dets.empty())
-				dets = detector (img);									// U dets se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+			if (i > 10 && facePos.empty()) {
+
+				facePos = detector(img);									// U facePos se ubacuju rectangleovi sa svim facama koje su pronadjene u slici 
+				rect.x = facePos[0].left();
+				rect.y = facePos[0].top();
+				rect.width = facePos[0].right()- facePos[0].left();
+				rect.height = facePos[0].bottom() - facePos[0].top();
+			}
 
 
+			if (!facePos.empty()) {											// Provera postoji li uopste lice u bazi
 
-			if (!dets.empty()) {                                        // Ako postoji lice iscrtaj to lice preko postojeceg frejma
-
-				full_object_detection shape = sp(img, dets[0]);			// DObijanje lica ( shape-a ) iz slike
+				full_object_detection shape = sp(img, facePos[0]);			// DObijanje lica ( shape-a ) iz slike
 				win.add_overlay(render_face_detections(shape));
 
 				if (i > 10 && !caliCheck) {								// KALIBRACIJA 
@@ -176,7 +178,7 @@ int main(int argc, char** argv)
 					tunnelData.r_eyebrow_in = (calibration.r_eyebrow_in - shape.part(21).y() + shift) ;
 					tunnelData.l_eyebrow_in = (calibration.l_eyebrow_in - shape.part(22).y() + shift);
 					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(2).y() + shift);
-					
+
 					DEBUG(shift);
 					DEBUG(tunnelData.r_eyebrow_in);
 
@@ -188,7 +190,7 @@ int main(int argc, char** argv)
 
 				}//Ako je kalibracija odradjena mozemo da racunamo vrednosti na osnovu kalibracije
 
-			}// Kraj provere da li postoji faca u dets
+			}// Kraj provere da li postoji faca u facePos
 
 			if (i == 135) {												// Zavrsetak merenja vremena
 
@@ -204,17 +206,15 @@ int main(int argc, char** argv)
 
 			}//Racunanje FPSa
 			
-
-			//imshow("Prozor", frame);
-			//waitKey(10);
+			cv::rectangle(frame, rect, Scalar(255,120,35), 5, 8, 0);
+			imshow("Prozor", frame);
+			waitKey(30);
 
         }//For petlja
 
 
 
-    }
-
-
+    }//Try petlja
 
 
 
