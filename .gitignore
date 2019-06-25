@@ -5,3 +5,5 @@ waf3*/
 download/
 build/
 out/
+*.mp4
+out.txt

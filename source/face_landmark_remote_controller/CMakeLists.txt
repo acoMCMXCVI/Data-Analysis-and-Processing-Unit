@@ -6,6 +6,7 @@ add_executable(
 	face_landmark_remote_controller
 	face_landmark_remote_controller.cpp
 	TunnelClient.cpp
+	CalcData.cpp
 )
 
 set(CMAKE_PREFIX_PATH ../../out/)

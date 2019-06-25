@@ -13,7 +13,7 @@
 #pragma comment (lib, "AdvApi32.lib")
 
 
-#define SERVER  false							//Need for sever
+#define SERVER  true							//Need for sever
 
 #define CAMERA -1
 
@@ -48,6 +48,7 @@ using namespace dlib;
 using namespace std;
 
 #include "TunnelClient.h"
+#include "CalcData.h"
 
 // ----------------------------------------------------------------------------------------
 
@@ -107,9 +108,8 @@ int main(int argc, char** argv)
 
 		TunnelData tunnelData;											// Podaci za slanje Urealu
 
-		TunnelData calibration;											// Podaci za kalibraciju
+		CalcData caliData;
 		bool caliCheck = false;											// Kalibracija y || n
-		bool faceCheck = false;											//Postojili faca y || n
 
 		time_t start, end;												// Merac vremena
 
@@ -156,12 +156,7 @@ int main(int argc, char** argv)
 
 				if (i > 10 && !caliCheck) {								// KALIBRACIJA 
 
-					calibration.noseroot = shape.part(29).y();
-					
-					calibration.r_eyebrow_out = shape.part(18).y();
-					calibration.r_eyebrow_in = shape.part(21).y();
-					calibration.l_eyebrow_in = shape.part(22).y();
-					calibration.l_eyebrow_out = shape.part(26).y();
+					caliData.calibration(shape);							// Kalibracija sa klasom CalcData
 
 					caliCheck = true;
 					cout << "Uspesno kalibrisan sistem" << endl;
@@ -170,22 +165,12 @@ int main(int argc, char** argv)
 
 
 
-				if (caliCheck) {											// RACUNANJE VREDNOSTI 
+				if (caliCheck) {										// RACUNANJE VREDNOSTI 
 
-					float shift = shape.part(29).y() - calibration.noseroot;
+				tunnelData= caliData.getTunnelData(shape, caliData);		// Umesto tunnelData moze i samo -- caliData.getTunnelData(shape, caliData); --
 
-					tunnelData.r_eyebrow_out = (calibration.r_eyebrow_out - shape.part(18).y() + shift);
-					tunnelData.r_eyebrow_in = (calibration.r_eyebrow_in - shape.part(21).y() + shift) ;
-					tunnelData.l_eyebrow_in = (calibration.l_eyebrow_in - shape.part(22).y() + shift);
-					tunnelData.l_eyebrow_out = (calibration.l_eyebrow_out - shape.part(2).y() + shift);
-
-					DEBUG(shift);
-					DEBUG(tunnelData.r_eyebrow_in);
-
-					myfile << tunnelData.r_eyebrow_in << endl;				//Upis podataka u fajl
-
-#if SERVER																//Slanje podataka
-					tunnelClient.sendTunnelData(tunnelData);
+#if SERVER																	
+				tunnelClient.sendTunnelData(tunnelData);					// Slanje podataka
 #endif // Server
 
 				}//Ako je kalibracija odradjena mozemo da racunamo vrednosti na osnovu kalibracije
