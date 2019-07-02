@@ -13,9 +13,9 @@
 #pragma comment (lib, "AdvApi32.lib")
 
 
-#define SERVER  true							//Need for sever
+#define SERVER  true							// Need for sever
 
-#define CAMERA -1
+#define CAMERA -2								// -1 for video -- 0 for PC camera -- 1 for live capture
 
 #define IP_ADDR "127.0.0.1"
 #define IP_PORT 27000
@@ -91,7 +91,9 @@ int main(int argc, char** argv)
 #if CAMERA >= 0
 		VideoCapture cap(CAMERA);
 #elif CAMERA -1
-		VideoCapture cap("../../source/face_landmark_remote_controller/klip.mp4");
+		VideoCapture cap("../../source/face_landmark_remote_controller/ema.mp4");
+#elif CAMERA -2																									// TOOO DOOO
+		VideoCapture cap("../../source/face_landmark_remote_controller/ema.mp4");
 #endif //CAMERA || CLIP
 				
 
@@ -146,6 +148,7 @@ int main(int argc, char** argv)
 				rect.y = facePos[0].top();
 				rect.width = facePos[0].right()- facePos[0].left();
 				rect.height = facePos[0].bottom() - facePos[0].top();
+
 			}
 
 
@@ -167,13 +170,14 @@ int main(int argc, char** argv)
 
 				if (caliCheck) {										// RACUNANJE VREDNOSTI 
 
-				tunnelData= caliData.getTunnelData(shape, caliData);		// Umesto tunnelData moze i samo -- caliData.getTunnelData(shape, caliData); --
+					tunnelData= caliData.getTunnelData(shape);					// Umesto tunnelData moze i samo -- caliData.getTunnelData(shape, caliData); --
 
 #if SERVER																	
-				tunnelClient.sendTunnelData(tunnelData);					// Slanje podataka
+					tunnelClient.sendTunnelData(tunnelData);					// Slanje podataka
 #endif // Server
 
 				}//Ako je kalibracija odradjena mozemo da racunamo vrednosti na osnovu kalibracije
+
 
 			}// Kraj provere da li postoji faca u facePos
 

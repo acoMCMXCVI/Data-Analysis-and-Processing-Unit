@@ -12,12 +12,19 @@ using namespace std;
 
 class CalcData {
 public:
+
 	CalcData();
-	CalcData(const full_object_detection& face);
 	~CalcData();
 	void calibration(const full_object_detection& face);
-	TunnelData getTunnelData(const full_object_detection& faceRealTime, CalcData);
+	TunnelData getTunnelData(const full_object_detection& faceRealTime );
+
 private:
+
+//	TRESHHOLDS
+	float eyebrown_tresh = 16; 
+	float eyelid_t_tre = 16;
+	float eyelid_d_tre = 16;
+	float nose_trehs = 8;
 	
 //	EYEBROWN 
 	int noseroot;
@@ -29,31 +36,31 @@ private:
 	int l_eyebrow_in;
 
 // EYELID
-	//int r_eyelid_top_l;
-	//int r_eyelid_top_r;
-	//int r_eyelid_down_l;
-	//int r_eyelid_down_r;
-
-	//int l_eyelid_top_l;
-	//int l_eyelid_top_r;
-	//int l_eyelid_down_l;
-	//int l_eyelid_down_r;
-
-	//int r_eyelid_center_r;
-	//int r_eyelid_center_l;
-
-	//int l_eyelid_center_r;
-	//int l_eyelid_center_l;
-	
-
-	int r_eyelid_t;
-	int r_eyelid_d;
-	int r_eyelid_c;
+	float r_eyelid_t;
+	float r_eyelid_d;
+	float r_eyelid_c;
 
 	int l_eyelid_t;
 	int l_eyelid_d;
 	int l_eyelid_c;
 
+	float r_eyelid_t_dist;
+	float r_eyelid_d_dist;
+
+	float l_eyelid_t_dist;
+	float l_eyelid_d_dist;
+
+//	NOSE
+	int noseroot_d;
+
+	int r_nose;
+	int l_nose;
+
+
+
+// METODE
+	//ToDo
+	float eyeCalcY(int a, int b, const full_object_detection & faceRealTime); // Racuna srednje tacke ociju posto se sve tri tacke sastoje iz po 2 tacke
 
 };
 

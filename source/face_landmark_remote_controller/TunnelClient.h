@@ -9,9 +9,9 @@
 
 class TunnelClient{
 public:
-	TunnelClient();
+	TunnelClient(); //Kontruktor se podesava i pravi se server, poveznica
 	~TunnelClient();
-	void sendTunnelData(const TunnelData& tunnelData);
+	void sendTunnelData(const TunnelData& tunnelData); //Salje podatke
 private:
 	
 	WSADATA wsaData;

@@ -5,28 +5,6 @@ CalcData::CalcData()
 {
 }
 
-CalcData::CalcData(const full_object_detection& face){
-
-//	EYEBROWN
-	noseroot = face.part(29).y();
-				 
-	r_eyebrow_out = face.part(18).y();
-	r_eyebrow_in = face.part(21).y();
-				 
-	l_eyebrow_out = face.part(22).y();
-	l_eyebrow_in = face.part(26).y();
-
-//	EYELID
-	r_eyelid_t = ( face.part(53).y() + face.part(54).y() )/2 ;
-	r_eyelid_d = ( face.part(57).y() + face.part(56).y() )/2 ;
-	r_eyelid_c = ( face.part(52).y() + face.part(55).y() )/2 ;
-			   	 
-	l_eyelid_t = ( face.part(59).y() + face.part(60).y() )/2 ;
-	l_eyelid_d = ( face.part(63).y() + face.part(62).y() )/2 ;
-	l_eyelid_c = ( face.part(58).y() + face.part(61).y() )/2 ;
-	
-}
-
 CalcData::~CalcData() {}
 
 void CalcData::calibration(const full_object_detection& face)
@@ -42,30 +20,70 @@ void CalcData::calibration(const full_object_detection& face)
 	l_eyebrow_in = face.part(22).y();
 
 	//	EYELID
-	r_eyelid_t = (face.part(37).y() + face.part(38).y()) / 2;
-	r_eyelid_d = (face.part(41).y() + face.part(48).y()) / 2;
-	r_eyelid_c = (face.part(36).y() + face.part(39).y()) / 2;
+	r_eyelid_t = eyeCalcY(37, 38, face);
+	r_eyelid_d = eyeCalcY(41, 40, face);
+	r_eyelid_c = eyeCalcY(36, 36, face);//39
 
-	l_eyelid_t = (face.part(43).y() + face.part(44).y()) / 2;
-	l_eyelid_d = (face.part(47).y() + face.part(46).y()) / 2;
-	l_eyelid_c = (face.part(42).y() + face.part(45).y()) / 2;
+	l_eyelid_t = eyeCalcY(43, 44, face);
+	l_eyelid_d = eyeCalcY(47, 46, face);
+	l_eyelid_c = eyeCalcY(45, 45, face);//42
 	
+	r_eyelid_t_dist = r_eyelid_c - r_eyelid_t ;
+	r_eyelid_d_dist = r_eyelid_c - r_eyelid_d ;
+				 
+	l_eyelid_t_dist = l_eyelid_c - l_eyelid_t;
+	l_eyelid_d_dist = l_eyelid_c - l_eyelid_d;
+
+
+	//	NOSE
+	noseroot_d = face.part(33).y();
+
+	r_nose = face.part(31).y();
+	l_nose = face.part(35).y();
+
+
 }
 
-TunnelData CalcData::getTunnelData(const full_object_detection & faceRealTime, CalcData caliData)
+TunnelData CalcData::getTunnelData(const full_object_detection & faceRealTime )
 {
 
 	TunnelData tunnelData;
-	// ToDo: probati bez shifta
-	float shift = faceRealTime.part(29).y() - caliData.noseroot;
 
-	tunnelData.r_eyebrow_out = (caliData.r_eyebrow_out - faceRealTime.part(18).y() + shift);
-	tunnelData.r_eyebrow_in = (caliData.r_eyebrow_in - faceRealTime.part(21).y() + shift);
-	tunnelData.l_eyebrow_out = (caliData.l_eyebrow_out - faceRealTime.part(26).y() + shift);
-	tunnelData.l_eyebrow_in = (caliData.l_eyebrow_in - faceRealTime.part(22).y() + shift);
+//	EYEBROW
+	// ToDo: probati bez shifta
+	float shift_eyebrow = faceRealTime.part(29).y() - this->noseroot;
+
+	tunnelData.r_eyebrow_out = (this->r_eyebrow_out - faceRealTime.part(18).y() + shift_eyebrow);
+	tunnelData.r_eyebrow_in = (this->r_eyebrow_in - faceRealTime.part(21).y() + shift_eyebrow);
+
+	tunnelData.l_eyebrow_out = (this->l_eyebrow_out - faceRealTime.part(26).y() + shift_eyebrow);
+	tunnelData.l_eyebrow_in = (this->l_eyebrow_in - faceRealTime.part(22).y() + shift_eyebrow);
+
+
+//	EYELID
+	tunnelData.r_eyelid_top = eyeCalcY(36, 36, faceRealTime) - eyeCalcY(37, 38, faceRealTime) - this->r_eyelid_t_dist;
+	tunnelData.r_eyelid_down = eyeCalcY(36, 36, faceRealTime) - eyeCalcY(41, 40, faceRealTime) - this->r_eyelid_d_dist;
+
+	tunnelData.l_eyelid_top = eyeCalcY(45, 45, faceRealTime) - eyeCalcY(43, 44, faceRealTime) - this->l_eyelid_t_dist;
+	tunnelData.l_eyelid_down = eyeCalcY(45, 45, faceRealTime) - eyeCalcY(47, 46, faceRealTime) - this->l_eyelid_d_dist;
+
+
+//	NOSE
+	float shift_nose = faceRealTime.part(33).y() - this->noseroot_d;
+
+	tunnelData.r_nose = (this->r_nose - faceRealTime.part(31).y() + shift_nose);
+	tunnelData.l_nose = (this->l_nose - faceRealTime.part(35).y() + shift_nose);
+
+
+	cout << fixed << setprecision(3) << tunnelData.r_eyelid_top << endl;
 
 
 	return tunnelData;
+}
+
+float CalcData::eyeCalcY(int a, int b, const full_object_detection & faceRealTime)
+{
+	return (faceRealTime.part(a).y() + faceRealTime.part(b).y()) / 2;
 }
 
 
