@@ -7,28 +7,32 @@ class TunnelData {
 public:
 
 
-// eyebrow
+//	eyebrow
+	float noseroot;
 
-	int noseroot;
-
-	int r_eyebrow_out;
-	int r_eyebrow_in;
+	float r_eyebrow_out;
+	float r_eyebrow_in;
 	
-	int l_eyebrow_out;
-	int l_eyebrow_in;
+	float l_eyebrow_out;
+	float l_eyebrow_in;
 
-// eyelid
-
+//	eyelid
 	float r_eyelid_top;
 	float r_eyelid_down;
 
 	float l_eyelid_top;
 	float l_eyelid_down;
 
-// nose 
+//	nose 
+	float r_nose;
+	float l_nose;
 
-	int r_nose;
-	int l_nose;
+// mouth
+	float r_lipcorner;
+	float l_lipcorner;
+
+//	jaw
+	float jaw;
 
 
 };

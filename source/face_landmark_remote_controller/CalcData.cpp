@@ -10,7 +10,7 @@ CalcData::~CalcData() {}
 void CalcData::calibration(const full_object_detection& face)
 {
 
-	//	EYEBROWN
+//	EYEBROWN
 	noseroot = face.part(29).y();
 
 	r_eyebrow_out = face.part(18).y();
@@ -19,7 +19,8 @@ void CalcData::calibration(const full_object_detection& face)
 	l_eyebrow_out = face.part(26).y();
 	l_eyebrow_in = face.part(22).y();
 
-	//	EYELID
+
+//	EYELID
 	r_eyelid_t = eyeCalcY(37, 38, face);
 	r_eyelid_d = eyeCalcY(41, 40, face);
 	r_eyelid_c = eyeCalcY(36, 36, face);//39
@@ -35,16 +36,30 @@ void CalcData::calibration(const full_object_detection& face)
 	l_eyelid_d_dist = l_eyelid_c - l_eyelid_d;
 
 
-	//	NOSE
+//	NOSE
 	noseroot_d = face.part(33).y();
 
 	r_nose = face.part(31).y();
 	l_nose = face.part(35).y();
 
 
+//	MOUTH
+	lipCorner_root = eyeCalcY(62, 66, face);
+
+	r_lipCorner = face.part(48).y();
+	l_lipCorner = face.part(54).y();
+
+	r_lipCprner_dist = lipCorner_root - r_lipCorner  ;
+	l_lipCprner_dist = lipCorner_root - l_lipCorner  ;
+
+
+//	JAW
+	jaw = ( eyeCalcY(7, 8, face) + face.part(9).y() )/2;
+
+
 }
 
-TunnelData CalcData::getTunnelData(const full_object_detection & faceRealTime )
+TunnelData CalcData::calculateTunnelData(const full_object_detection & faceRealTime )
 {
 
 	TunnelData tunnelData;
@@ -71,13 +86,23 @@ TunnelData CalcData::getTunnelData(const full_object_detection & faceRealTime )
 //	NOSE
 	float shift_nose = faceRealTime.part(33).y() - this->noseroot_d;
 
-	tunnelData.r_nose = (this->r_nose - faceRealTime.part(31).y() + shift_nose);
-	tunnelData.l_nose = (this->l_nose - faceRealTime.part(35).y() + shift_nose);
+	tunnelData.r_nose = this->r_nose - faceRealTime.part(31).y() + shift_nose;
+	tunnelData.l_nose = this->l_nose - faceRealTime.part(35).y() + shift_nose;
 
 
-	cout << fixed << setprecision(3) << tunnelData.r_eyelid_top << endl;
+//	MOUTH
+	tunnelData.r_lipcorner = eyeCalcY(62, 66, faceRealTime) - faceRealTime.part(48).y() - this->r_lipCprner_dist;
+	tunnelData.l_lipcorner = eyeCalcY(62, 66, faceRealTime) - faceRealTime.part(54).y() - this->l_lipCprner_dist;
 
 
+//	JAW
+	tunnelData.jaw =  this->jaw - (eyeCalcY(7, 8, faceRealTime) + faceRealTime.part(9).y()) / 2 ;
+
+
+
+
+
+	cout << fixed << setprecision(3) << tunnelData.r_lipcorner << endl;
 	return tunnelData;
 }
 

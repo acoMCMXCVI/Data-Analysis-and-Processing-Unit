@@ -15,7 +15,7 @@
 
 #define SERVER  true							// Need for sever
 
-#define CAMERA -2								// -1 for video -- 0 for PC camera -- 1 for live capture
+#define CAMERA -1								// -1 for video -- 0 for PC camera -- 1 for live capture
 
 #define IP_ADDR "127.0.0.1"
 #define IP_PORT 27000
@@ -90,9 +90,9 @@ int main(int argc, char** argv)
 
 #if CAMERA >= 0
 		VideoCapture cap(CAMERA);
-#elif CAMERA -1
-		VideoCapture cap("../../source/face_landmark_remote_controller/ema.mp4");
-#elif CAMERA -2																									// TOOO DOOO
+#elif CAMERA == -1
+		VideoCapture cap("../../source/face_landmark_remote_controller/mile.mp4");
+#elif CAMERA == -2
 		VideoCapture cap("../../source/face_landmark_remote_controller/ema.mp4");
 #endif //CAMERA || CLIP
 				
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 
 			if (!facePos.empty()) {											// Provera postoji li uopste lice u bazi
 
-				full_object_detection shape = sp(img, facePos[0]);			// DObijanje lica ( shape-a ) iz slike
+				full_object_detection shape = sp(img, facePos[0]);			// Dobijanje lica ( shape-a ) iz slike
 				win.add_overlay(render_face_detections(shape));
 
 				if (i > 10 && !caliCheck) {								// KALIBRACIJA 
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 
 				if (caliCheck) {										// RACUNANJE VREDNOSTI 
 
-					tunnelData= caliData.getTunnelData(shape);					// Umesto tunnelData moze i samo -- caliData.getTunnelData(shape, caliData); --
+					tunnelData = caliData.calculateTunnelData(shape);			// Umesto tunnelData moze i samo -- caliData.getTunnelData(shape, caliData); --
 
 #if SERVER																	
 					tunnelClient.sendTunnelData(tunnelData);					// Slanje podataka
