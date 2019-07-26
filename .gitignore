@@ -5,5 +5,6 @@ waf3*/
 download/
 build/
 out/
+source/face_landmark_remote_controller/Data
 *.mp4
 out.txt

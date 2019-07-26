@@ -17,8 +17,11 @@ public:
 	~CalcData();
 	void calibration(const full_object_detection& face);
 	TunnelData calculateTunnelData(const full_object_detection& faceRealTime );
+	bool getcaliCheck();
 
 private:
+
+	bool caliCheck = false;
 
 //	TRESHHOLDS
 	float eyebrown_tresh = 16; 

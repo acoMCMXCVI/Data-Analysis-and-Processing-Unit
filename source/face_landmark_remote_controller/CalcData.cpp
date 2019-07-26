@@ -57,6 +57,9 @@ void CalcData::calibration(const full_object_detection& face)
 	jaw = ( eyeCalcY(7, 8, face) + face.part(9).y() )/2;
 
 
+//	Calibration DONE
+	caliCheck = true;
+
 }
 
 TunnelData CalcData::calculateTunnelData(const full_object_detection & faceRealTime )
@@ -106,9 +109,16 @@ TunnelData CalcData::calculateTunnelData(const full_object_detection & faceRealT
 	return tunnelData;
 }
 
+
 float CalcData::eyeCalcY(int a, int b, const full_object_detection & faceRealTime)
 {
 	return (faceRealTime.part(a).y() + faceRealTime.part(b).y()) / 2;
+}
+
+
+bool CalcData::getcaliCheck()
+{
+	return caliCheck;
 }
 
 
