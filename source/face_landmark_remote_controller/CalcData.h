@@ -2,13 +2,15 @@
 #ifndef CALC_DATA_H
 #define CALC_DATA_H
 
+
+#include "TunnelData.h"
+
+
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <iostream>
 
 using namespace dlib;
 using namespace std;
-
-#include "TunnelData.h"
 
 class CalcData {
 public:

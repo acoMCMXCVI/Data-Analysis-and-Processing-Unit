@@ -21,6 +21,7 @@ wget http://dlib.net/files/dlib-19.17.zip
 wget http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
 curl -OJ https://codeload.github.com/opencv/opencv/zip/3.2.0
 wget https://kent.dl.sourceforge.net/project/opencvlibrary/opencv-win/3.2.0/opencv-3.2.0-vc14.exe
+wget https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe
 popd
 
 ###############################################################################
@@ -31,6 +32,8 @@ echo "Install git"
 # On last dialog, uncheck "Enable Git Credential Manager"
 echo "Install cmake"
 msiexec /a ../../download/cmake-3.14.4-win64-x64.msi
+echo "Install python"
+../../download/python-3.7.4.exe
 
 ###############################################################################
 # Build prerequisites.
@@ -88,8 +91,7 @@ pushd build/face_landmark_remote_controller
 
 if [[ $OSTYPE == "windows" ]]
 then
-	cmake ../../source/face_landmark_remote_controller/ \
-		-G "Visual Studio 14 2015 Win64"
+	cmake ../../source/face_landmark_remote_controller/ -G "Visual Studio 14 2015 Win64"
 else
 	cmake ../../source/face_landmark_remote_controller/
 fi
@@ -104,7 +106,7 @@ cp ../../out/x64/vc14/bin/opencv_*.dll .
 cp /c/Windows/SysWOW64/downlevel/api-ms-win-crt-*-l1-1-0.dll .
 
 ###############################################################################
-# Test.
+# Test
 
 cp ../../download/shape_predictor_68_face_landmarks.dat.bz2 .
 bzip2 -d shape_predictor_68_face_landmarks.dat.bz2

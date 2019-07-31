@@ -34,6 +34,10 @@ public:
 //	jaw
 	float jaw;
 
+// neck
+	float orientX;
+	float orientY;
+	float orientZ;
 
 };
 
