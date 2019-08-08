@@ -15,13 +15,17 @@ public:
 	~TunnelClient();
 	void connectWithUnreal();
 	void sendTunnelData(const TunnelData& tunnelData); //Salje podatke
-	void getSensorsData( TunnelData& tunnelData); //Prima sensor data
+	std::vector < float > calibrationOrient();
+	std::vector < float > getSensorsData(); //Prima sensor data
 private:
 	
 	WSADATA wsaData;
 	SOCKET ListenSocket;
 	SOCKET ClientSocket;
 	SOCKET PhoneSocket;
+
+	double aX, aY, aZ;
+
 };
 
 #endif

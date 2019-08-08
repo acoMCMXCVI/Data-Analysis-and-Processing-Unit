@@ -18,18 +18,30 @@ public:
 	CalcData();
 	~CalcData();
 	void calibration(const full_object_detection& face);
-	TunnelData calculateTunnelData(const full_object_detection& faceRealTime );
+	void calibrationEyes(std::vector<float> coord);
+	void calibrationSensors(std::vector<float> orient);
+	TunnelData calculateTunnelData(const full_object_detection& faceRealTime, std::vector<float> orient, std::vector<float> eyes );
 	bool getcaliCheck();
+
+
+	void tunnelDataTurnToArray(const TunnelData data, std::vector < float>& arrayOfPositions);
+	TunnelData arrayTurnToTunnelData(std::vector < float> arrayOfPositions);
+	void initializeOldPostions();
+	void turnToMatrixOldPositions(const TunnelData data);
+	TunnelData calcAverage3 ();
+
+	void calculateVel();
 
 private:
 
 	bool caliCheck = false;
+	std::vector < float > positionOld{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	std::vector < float > positionNew{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	std::vector < float > acceleration{ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 
-//	TRESHHOLDS
-	float eyebrown_tresh = 16; 
-	float eyelid_t_tresh = 16;
-	float eyelid_d_tresh = 16;
-	float nose_trehs = 8;
+	std::vector <std::vector< float >>oldPositions;
+
+	ofstream myfileCalcData;
 	
 //	EYEBROWN 
 	float noseroot;
@@ -67,22 +79,43 @@ private:
 
 
 	// lipCorners
-	float lipCorner_root;
+	float lipCorner_rootUD;
 
-	float r_lipCorner;
-	float l_lipCorner;
+	float r_lipCornerUD;
+	float l_lipCornerUD;
 
-	float r_lipCprner_dist;
-	float l_lipCprner_dist;
+	float r_lipCorner_distUD;
+	float l_lipCorner_distUD;
+
+	float r_lipCornerLR;
+	float l_lipCornerLR;
+
+	float lip_d_root;
+	
+	float r_lip_d_dist;
+	float l_lip_d_dist;
+
+	float r_lip_d;
+	float l_lip_d;
 
 
 //	JAW
 	float jaw;
 
 
+// NECK
+	float orientX;
+	float orientY;
+	float orientZ;
+
+// EYES
+	float eyeX;
+	float eyeY;
+
+
 // METODE
 
-	float eyeCalcY(int a, int b, const full_object_detection & faceRealTime); // Racuna srednje tacke ociju posto se sve tri tacke sastoje iz po 2 tacke
+	float distCalcY(int a, int b, const full_object_detection & faceRealTime); // Racuna srednje tacke ociju posto se sve tri tacke sastoje iz po 2 tacke
 
 };
 

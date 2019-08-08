@@ -7,6 +7,7 @@ add_executable(
 	face_landmark_remote_controller.cpp
 	TunnelClient.cpp
 	CalcData.cpp
+	EyeDetector.cpp
 	fun.cpp
 )
 

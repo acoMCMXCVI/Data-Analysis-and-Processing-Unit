@@ -28,8 +28,16 @@ public:
 	float l_nose;
 
 // mouth
-	float r_lipcorner;
-	float l_lipcorner;
+	float r_lipcornerUD;
+	float r_lipcornerLR;
+	float l_lipcornerUD;
+	float l_lipcornerLR;
+
+	float r_up_lip;
+	float r_down_lip;
+
+	float l_up_lip;
+	float l_down_lip;
 
 //	jaw
 	float jaw;

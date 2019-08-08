@@ -11,6 +11,8 @@
 
 #define IP_PORT_PHONE 27001
 
+#define M_PI 3.14159265358979323846
+
 
 #include <iostream>
 using namespace std;
@@ -92,7 +94,7 @@ TunnelClient::TunnelClient() {
 		cout << "Client: bind() is OK." << endl;
 	}
 
-	cout << "All sockets are successfully created" << endl;
+	cout << "All sockets are successfully created" << endl << endl;
 }
 
 
@@ -116,7 +118,7 @@ void TunnelClient::connectWithUnreal()
 {
 	int iResult;
 
-	cout << "Waiting listener..." << endl;
+	cout << endl << "Waiting listener..." << endl;
 
 	// Waiting client ////////////////////////////////////////////////// The FIRST ONE ////////////////////////////////////
 	iResult = listen(ListenSocket, SOMAXCONN);
@@ -156,7 +158,55 @@ void TunnelClient::sendTunnelData(const TunnelData& tunnelData) {
 
 }
 
-void TunnelClient::getSensorsData( TunnelData& tunnelData) {
+std::vector<float> TunnelClient::calibrationOrient()
+{
+	std::vector < float > accValue(3,0);
+
+	unsigned long bytes_available = -1;
+	int iResult;
+
+	char data[256] = "proba";
+	char temp[500000];
+
+
+	ioctlsocket(PhoneSocket, FIONREAD, &bytes_available);
+
+	if (bytes_available > 0) {
+
+		while (bytes_available > 300) {
+
+			iResult = recv(PhoneSocket, temp, bytes_available - 256, 0);
+			if (iResult < 0) {
+				cout << "Recv failed 1" << endl;
+			}
+			ioctlsocket(PhoneSocket, FIONREAD, &bytes_available);
+
+		}
+
+
+		iResult = recv(PhoneSocket, data, 8316, 0);
+		if (iResult < 0) {
+			cout << "Recv failed 2" << endl;
+		}
+
+		string dataS(data);
+
+		aX = ::atof(dataS.substr(22, 27).c_str());
+		aY = ::atof(dataS.substr(30, 35).c_str());
+		aZ = ::atof(dataS.substr(38, 43).c_str());
+
+		accValue[0] = 180 * atan(aX / sqrt(aY*aY + aZ*aZ)) / M_PI;			// Roll
+		accValue[1] = 180 * atan(aY / sqrt(aX*aX + aZ*aZ)) / M_PI;			// Pitch
+
+	}
+
+
+	return accValue;
+}
+
+std::vector < float > TunnelClient::getSensorsData() {
+
+	vector < float > accValueRealTime(3, 0);
 
 	unsigned long bytes_available = -1;
 	int iResult;
@@ -173,7 +223,7 @@ void TunnelClient::getSensorsData( TunnelData& tunnelData) {
 
 				iResult = recv(PhoneSocket, temp, bytes_available - 256, 0);
 				if (iResult < 0) {
-					cout << "Recv failed 1" << endl;
+					cout << "Recv failed 3" << endl;
 				}
 				ioctlsocket(PhoneSocket, FIONREAD, &bytes_available);
 
@@ -182,18 +232,21 @@ void TunnelClient::getSensorsData( TunnelData& tunnelData) {
 
 			iResult = recv(PhoneSocket, data, 8316, 0);
 			if (iResult < 0) {
-				cout<<"Recv failed 2"<<endl;
+				cout<<"Recv failed 4"<<endl;
 			}
 
 			string dataS(data);
 
-			tunnelData.orientX = ::atof(dataS.substr( 22, 27).c_str());
-			tunnelData.orientY = ::atof(dataS.substr( 30, 35).c_str());
-			tunnelData.orientY = ::atof(dataS.substr( 38, 43).c_str());
+			aX = ::atof(dataS.substr(22, 27).c_str());
+			aY = ::atof(dataS.substr(30, 35).c_str());
+			aZ = ::atof(dataS.substr(38, 43).c_str());
 
-			cout << tunnelData.orientX << endl;
-
+			accValueRealTime[0] = 180 * atan(aX / sqrt(aY*aY + aZ*aZ)) / M_PI;			// Roll
+			accValueRealTime[1] = 180 * atan(aY / sqrt(aX*aX + aZ*aZ)) / M_PI;			// Pitch
+ 
 		}
 
+
+		return accValueRealTime;
 }
 
