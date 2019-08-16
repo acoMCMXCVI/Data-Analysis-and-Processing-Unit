@@ -3,17 +3,14 @@ import numpy as np
 from scipy.fftpack import fft
 import matplotlib.pyplot as plt
 
-
-acc = []
 pos = []
 
-with open('../face_landmark_remote_controller/Data/out.tsv') as tsvfile:
+with open('../face_landmark_remote_controller/Data/position_l_eyebrow_out.tsv') as tsvfile:
   reader = csv.reader(tsvfile, delimiter='\t')
   for row in reader:
-    acc.append(float(row[0]))
-    pos.append(float(row[1]))
+    pos.append(float(row[0]))
 
-t = np.arange(len(acc))
+t = np.arange(len(pos))
 
 fig, axs = plt.subplots()
 fig.suptitle('Position')
@@ -136,14 +133,16 @@ def acceleration (velocity,divide,show):
 
 
 fig, axs = plt.subplots()
-acceleration(velocity(pos,500,5,1),100,1)
+acceleration(velocity(pos,0,5,1),100,1)
 
 
 
-start = 500
+start = 160
 
 arr_average7 = average (pos,7,start)
 arr_average3 = average (pos,3,start)
+
+accCalc2 = np.array([])
 
 fig, axs = plt.subplots()
 acceleration(velocity(arr_average7,0,5,1),100,1)
@@ -151,7 +150,7 @@ acceleration(velocity(arr_average7,0,5,1),100,1)
 fig, axs = plt.subplots(2, 1)
 fig.suptitle("FFT")
 
-fft_plot_range(0, arr_average3, "average 3")
+#fft_plot_range(0, accCalc2, "acc")
 fft_plot_range(0, arr_average7, "average 7")
 fft_plot_range(start, pos, "position")
 

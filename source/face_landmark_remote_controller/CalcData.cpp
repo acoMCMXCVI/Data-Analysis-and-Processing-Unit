@@ -150,9 +150,21 @@ TunnelData CalcData::calculateTunnelData(const full_object_detection & faceRealT
 //	EYES
 	cout << eyeY - eyes[0] << "   " << eyeX - eyes[1] << endl; 
 
-	turnToMatrixOldPositions(tunnelData);
 
+
+
+
+
+	myfileCalcData << tunnelData.l_eyebrow_out << endl;
+
+
+//	CONVERT TO MATRIX OF OLD POSITIONS FOR CALULATING AVERAGE
+	turnToMatrixOldPositions(tunnelData);
 	tunnelData = calcAverage3 ();
+
+
+
+
 
 	//positionOld = positionNew;
 	//tunnelDataTurnToArray(tunnelData, positionNew);

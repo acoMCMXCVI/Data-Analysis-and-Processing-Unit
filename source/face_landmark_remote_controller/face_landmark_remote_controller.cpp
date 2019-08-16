@@ -21,7 +21,7 @@
 
 #define CAMERA -2								// -2, -1 for video -- 0 for PC camera -- 1 for live capture
 
-#define ROTATEFRAME ROTATE_90_CLOCKWISE
+#define ROTATEFRAME ROTATE_90_COUNTERCLOCKWISE
 
 
 #include <dlib/image_processing/frontal_face_detector.h>
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 #if CAMERA >= 0																			// Odredjivanje kamere
 		VideoCapture cap(CAMERA);
 #elif CAMERA == -1
-		VideoCapture cap("../../source/face_landmark_remote_controller/Data/ema.avi");
+		VideoCapture cap("../../source/face_landmark_remote_controller/Data/mile.mp4");
 #elif CAMERA == -2
 		VideoCapture cap("../../source/face_landmark_remote_controller/Data/ema4Expresion.avi"); // ema4Expresion
 #endif //CAMERA || CLIP
@@ -139,7 +139,7 @@ if (boolExport == 'y')																	// Ako se traxi export onda se definise g
 			if ( i == 15 ) time(&start);												// Pocetak merenja vremena
 
 
-#if CAMERA >= 1
+#if CAMERA >= -1
 			rotate(frame, frame, ROTATEFRAME);
 #endif // CAMERA
 
