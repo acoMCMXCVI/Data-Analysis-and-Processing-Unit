@@ -4,31 +4,29 @@
 
 ## Video
 
+The link of the video shows a short demo of results.
+
 https://www.youtube.com/watch?v=s5cxJsi77JA
 
-## Opis
+## Description
 
-Projekat je urađen kao deo moje B.Sc. teze.
+The project was done as part of my B.Sc. thesis. 
 
-Jedinica za analizu i obradu podataka je računarska stanica sa odgovarajućom softverskom podrškom,
-koja je deo sistema (prikazanom na slici ispod) za prenošenje izraza glumca na digitalnog karaktera u realnom vremenu. 
+Data analysis and processing unit is a computer station with appropriate software support, which is part of the system (shown in the figure below) for real-time transferring facial expressions of actor to digital character. 
 
-Ova jedinica za cilj ima analiziranje ulaznih podataka, 
-te obradu u realnom vremenu, kako bi kao izlazne podatke dobili odvojene 
-obrađene korisne podatke spremne za korištenje od strane jedinice za vizuelizaciju ekspresija u _UE4_ (https://github.com/acoMCMXCVI/Unit-for-Visualization-of-Expressions-UE4).
+The purpose of this unit is to analyse input data, as well as processing those data in real time, and for output data gives extracted prepared useful data ready for use from visualization of facial expressions unit (https://github.com/acoMCMXCVI/Unit-for-Visualization-of-Expressions-UE4).
 
-Ulazni podaci ove jedinice se sastoje iz sekvence slika dobijene _RGB_ kamerom za ekstrakciju ekspresija lica 
-i sekvence vektora dobijenih akcelometrom za dobijanja pokreta glavom.
+The input data of this unit is consisted of sequence of the obtained images from RGB camera for facial expressions estimation, and sequence of vectors obtained from accelerometer for head pose estimation.
 
 
 ![](Images/sys3.jpg)
 
 ## _Assets_
 
-Karakter koji je korišten je deo _A Boy and His Kite Demo-a_ koji se može naći na _Unreal Store-u_: 
+The character that was used is a part of "A boy and his kite" demo which can be found in Unreal store:
 https://www.unrealengine.com/marketplace/en-US/store
 
-## Korišćenje
+## Usage
 
-Da bi sistem bio uspešno implementiran potrebno je instalirati sve delove sistema. 
-Za sve detalje se slobodno javite na mail: rajicaleksandar6@gmail.com.
+In order of successfully implementation of the system, it is necessary to install all parts of the system. 
+For all details, feel free to contact me by e-mail: rajicaleksandar6@gmail.com.
